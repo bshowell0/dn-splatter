@@ -563,7 +563,7 @@ class MushroomDataParser(DataParser):
 
                         metadata.update(
                             self._load_3D_points(
-                                iphone_ply_file_path, transform_matrix, scale_factor
+                                kinect_pointcloud_path, transform_matrix, scale_factor
                             )
                         )
 
