@@ -834,7 +834,7 @@ class DNSplatterModel(SplatfactoModel):
             outputs["normal"][0, ...]
             if outputs["normal"].dim() == 4
             else outputs["normal"]
-        )
+        ).to(self.device)
 
         combined_rgb = torch.cat([gt_rgb, predicted_rgb], dim=1)
         combined_depth = (
@@ -894,7 +894,7 @@ class DNSplatterModel(SplatfactoModel):
             metrics_dict.update(depth_metrics)
             combined_depth = torch.cat([gt_depth, predicted_depth], dim=1)
 
-        if "normal" in batch:
+        if "normal" in batch and self.config.predict_normals:
             gt_normal = batch["normal"].to(self.device)
 
             if gt_normal.shape != predicted_normal.shape:
