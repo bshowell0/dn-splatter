@@ -632,6 +632,20 @@ class MushroomDataParser(DataParser):
                     )
                 }
             )
+
+            # Derive DA3 confidence paths: same dir/stem as depth, but with "_conf" suffix.
+            # Only wire if every expected file exists so that runs without --save-conf degrade
+            # gracefully to heuristic uncertainty rather than crashing.
+            if len(mono_depth_filenames) > 0:
+                da3_conf_filenames = [
+                    p.parent / f"{p.stem}_conf.npy"
+                    for p in mono_depth_filenames
+                ]
+                if all(p.exists() for p in da3_conf_filenames):
+                    metadata["da3_conf_filenames"] = [
+                        da3_conf_filenames[idx] for idx in indices
+                    ]
+
         if self.config.depth_mode == "all" or self.config.depth_mode == "sensor":
             metadata.update(
                 {

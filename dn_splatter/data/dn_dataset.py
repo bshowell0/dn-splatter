@@ -98,6 +98,13 @@ class GDataset(InputDataset):
                         "[bold yellow] Could not find mono depth filenames in dataparser. Quitting!"
                     )
                     quit()
+
+            # DA3 confidence maps — optional; absent when inference was run without --save-conf
+            # or when the dataparser did not find matching _conf.npy files.
+            self.da3_conf_filenames = None
+            if "da3_conf_filenames" in self.metadata:
+                self.da3_conf_filenames = self.metadata["da3_conf_filenames"]
+
         # load normals
         if self.load_normals and (
             "normal_filenames" not in dataparser_outputs.metadata.keys()
@@ -163,6 +170,17 @@ class GDataset(InputDataset):
                     scale_factor=scale_factor,
                 )
                 depth_data.update({"mono_depth": mono_image})
+
+                # Load DA3 confidence if available. scale_factor=1.0 because conf is in
+                # [1, inf) and must not be multiplied by depth_unit_scale_factor.
+                if self.da3_conf_filenames is not None:
+                    conf_image = get_depth_image_from_path(
+                        filepath=Path(self.da3_conf_filenames[data["image_idx"]]),
+                        height=height,
+                        width=width,
+                        scale_factor=1.0,
+                    )
+                    depth_data.update({"mono_depth_conf": conf_image})
 
         if self.load_normals:
             assert self.normal_filenames is not None
