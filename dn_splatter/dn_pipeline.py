@@ -220,7 +220,7 @@ class DNSplatterPipeline(VanillaPipeline):
                     indices = random.sample(range(pixels_per_frame), samples_per_frame)
                     c2w = torch.concatenate(
                         [
-                            camera.camera_to_worlds,
+                            camera.camera_to_worlds.to(self.device),
                             torch.tensor([[[0, 0, 0, 1]]]).to(self.device),
                         ],
                         dim=1,
@@ -307,7 +307,7 @@ class DNSplatterPipeline(VanillaPipeline):
                     indices = random.sample(range(pixels_per_frame), samples_per_frame)
                     c2w = torch.concatenate(
                         [
-                            camera.camera_to_worlds,
+                            camera.camera_to_worlds.to(self.device),
                             torch.tensor([[[0, 0, 0, 1]]]).to(self.device),
                         ],
                         dim=1,
