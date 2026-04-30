@@ -156,10 +156,7 @@ class DNSplatterPipeline(VanillaPipeline):
         all_images = num_train + num_eval
 
         if not self.config.skip_point_metrics:
-            pixels_per_frame = int(
-                self.datamanager.train_dataset.cameras[0].width
-                * self.datamanager.train_dataset.cameras[0].height
-            )
+            # samples_per_frame is the *target* per frame; clamped to actual pixels below
             samples_per_frame = (self.config.num_pd_points + all_images) // (all_images)
 
         if self.datamanager.dataparser.__class__.__name__ == "MushroomDataParser":
@@ -217,7 +214,9 @@ class DNSplatterPipeline(VanillaPipeline):
                 if "depth" in outputs and not self.config.skip_point_metrics:
                     depth = outputs["depth"]
                     rgb = outputs["rgb"]
-                    indices = random.sample(range(pixels_per_frame), samples_per_frame)
+                    pixels_per_frame = int(camera.width.item() * camera.height.item())
+                    n_samples = min(samples_per_frame, pixels_per_frame)
+                    indices = random.sample(range(pixels_per_frame), n_samples)
                     c2w = torch.concatenate(
                         [
                             camera.camera_to_worlds.to(self.device),
@@ -304,7 +303,9 @@ class DNSplatterPipeline(VanillaPipeline):
                     )
                     outputs = self.model.get_outputs_for_camera(camera=camera)
                     rgb, depth = outputs["rgb"], outputs["depth"]
-                    indices = random.sample(range(pixels_per_frame), samples_per_frame)
+                    pixels_per_frame = int(camera.width.item() * camera.height.item())
+                    n_samples = min(samples_per_frame, pixels_per_frame)
+                    indices = random.sample(range(pixels_per_frame), n_samples)
                     c2w = torch.concatenate(
                         [
                             camera.camera_to_worlds.to(self.device),
