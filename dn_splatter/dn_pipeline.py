@@ -240,6 +240,7 @@ class DNSplatterPipeline(VanillaPipeline):
                     if self._model.__class__.__name__ not in [
                         "DNSplatterModel",
                         "SplatfactoModel",
+                        "DepthGSSModel",
                     ]:
                         depth = depth / outputs["directions_norm"]
 
@@ -329,6 +330,7 @@ class DNSplatterPipeline(VanillaPipeline):
                     if self._model.__class__.__name__ not in [
                         "DNSplatterModel",
                         "SplatfactoModel",
+                        "DepthGSSModel",
                     ]:
                         depth = depth / outputs["directions_norm"]
 
@@ -382,6 +384,7 @@ class DNSplatterPipeline(VanillaPipeline):
                 if self._model.__class__.__name__ not in [
                     "DNSplatterModel",
                     "SplatfactoModel",
+                    "DepthGSSModel",
                 ]:
                     scale = self.datamanager.dataparser.scale_factor
                     transformation_matrix = self.datamanager.dataparser.transform_matrix
@@ -421,6 +424,7 @@ class DNSplatterPipeline(VanillaPipeline):
                 if self._model.__class__.__name__ not in [
                     "DNSplatterModel",
                     "SplatfactoModel",
+                    "DepthGSSModel",
                 ]:
                     scale = self.datamanager.dataparser.scale_factor
                     transformation_matrix = self.datamanager.dataparser.transform_matrix
@@ -469,6 +473,7 @@ class DNSplatterPipeline(VanillaPipeline):
                 if self._model.__class__.__name__ not in [
                     "DNSplatterModel",
                     "SplatfactoModel",
+                    "DepthGSSModel",
                 ]:
                     scale = self.datamanager.dataparser.scale_factor
                     transformation_matrix = self.datamanager.dataparser.transform_matrix
