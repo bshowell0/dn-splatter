@@ -74,6 +74,19 @@ def depth_eval_faro(data: Path, path_to_faro: Path):
     )
 
     def calculate_metrics(num_frames, depth_list, capture_mode):
+        # Guard: skip when reference_depth/*.png does not exist for this
+        # capture_mode. Some MuSHRoom rooms ship without per-frame FARO PNGs;
+        # without this guard, `torch.stack([], 0)` below raises and kills the
+        # whole ns-eval run, losing the RGB / depth / PD metrics that already
+        # computed.
+        ref_dir = gt_path / Path(capture_mode) / Path("reference_depth")
+        if not ref_dir.is_dir() or not any(ref_dir.glob("*.png")):
+            CONSOLE.print(
+                f"[yellow]No reference_depth/*.png for {capture_mode} at {ref_dir}; "
+                f"skipping FARO depth eval for this capture_mode."
+            )
+            return {}
+
         for batch_index in track(range(0, num_frames, BATCH_SIZE)):
             CONSOLE.print(
                 f"[bold yellow]Evaluating batch {batch_index // BATCH_SIZE} / {num_frames//BATCH_SIZE}"
@@ -114,6 +127,15 @@ def depth_eval_faro(data: Path, path_to_faro: Path):
                 predicted_depth.append(render_img)
                 gt_depth.append(origin_img)
 
+            if len(predicted_depth) == 0:
+                # Every frame in this batch was skipped (missing per-frame GT).
+                # Skip the batch instead of crashing on torch.stack([]).
+                CONSOLE.print(
+                    f"[yellow]No matching reference_depth frames in batch "
+                    f"{batch_index // BATCH_SIZE} for {capture_mode}; skipping batch."
+                )
+                continue
+
             predicted_depth = torch.stack(predicted_depth, 0)
             gt_depth = torch.stack(gt_depth, 0)
 
@@ -130,6 +152,15 @@ def depth_eval_faro(data: Path, path_to_faro: Path):
             a1_score_batch.append(a1)
             a2_score_batch.append(a2)
             a3_score_batch.append(a3)
+
+        if len(mse_score_batch) == 0:
+            # All batches were empty — no GT frames matched. Return empty
+            # so the caller knows there is no FARO metric for this mode.
+            CONSOLE.print(
+                f"[yellow]No frames evaluated for {capture_mode}; "
+                f"skipping FARO mean aggregation."
+            )
+            return {}
 
         mean_scores = {
             "mse": float(torch.stack(mse_score_batch).mean().item()),
